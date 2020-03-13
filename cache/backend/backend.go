@@ -10,6 +10,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/meltwater/drone-cache/cache"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -64,6 +65,17 @@ type AzureConfig struct {
 // FileSystemConfig is a structure to store filesystem backend configuration
 type FileSystemConfig struct {
 	CacheRoot string
+}
+
+// AlibabaOSSConfig a structure to store AlibabaOSS backend configuration
+type AlibabaOSSConfig struct {
+	Endpoint string
+
+	Bucket string
+
+	// An AccessKey (AK) is composed of an AccessKeyId and an AccessKeySecret.
+	// They work in pairs to perform access identity verification.
+	AccesKeyID, AccesKeySecret string
 }
 
 // InitializeS3Backend creates an S3 backend
@@ -256,4 +268,26 @@ func InitializeGCSBackend(l log.Logger, c CloudStorageConfig, debug bool) (cache
 	}
 
 	return newGCS(c.Bucket, c.ACL, c.Encryption, opts...)
+}
+
+// InitializeOSSBackend creates an AlibabaOSS backend
+func InitializeOSSBackend(l log.Logger, c AlibabaOSSConfig, debug bool) (cache.Backend, error) {
+	ossConf := &oss.Config{}
+
+	if c.Endpoint != "" {
+		ossConf.Endpoint = c.Endpoint
+	}
+
+	if c.AccesKeyID != "" {
+		ossConf.AccessKeyID = c.AccesKeyID
+	}
+
+	if c.AccesKeySecret != "" {
+		ossConf.AccessKeySecret = c.AccesKeySecret
+	}
+
+	if debug {
+		level.Debug(l).Log("msg", "oss storage backend", "config", fmt.Sprintf("%+v", c))
+	}
+	return newAlibabaOss(c.Bucket, ossConf)
 }

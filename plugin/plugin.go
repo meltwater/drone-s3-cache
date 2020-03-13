@@ -38,6 +38,7 @@ type (
 		SFTP         backend.SFTPConfig
 		Azure        backend.AzureConfig
 		CloudStorage backend.CloudStorageConfig
+		AlibabaOSS   backend.AlibabaOSSConfig
 	}
 
 	// Plugin stores metadata about current plugin.
@@ -125,6 +126,9 @@ func initializeBackend(logger log.Logger, c Config) (cache.Backend, error) {
 	case "sftp":
 		level.Warn(logger).Log("msg", "using sftp as backend")
 		return backend.InitializeSFTPBackend(logger, c.SFTP, c.Debug)
+	case "alibaba":
+		level.Warn(logger).Log("msg", "using alibaba.oss as backend")
+		return backend.InitializeOSSBackend(logger, c.AlibabaOSS, c.Debug)
 	default:
 		return nil, errors.New("unknown backend")
 	}
